@@ -6,7 +6,6 @@ from fastapi import FastAPI
 import os
 import requests
 from dotenv import load_dotenv
-import uvicorn
 from pydantic import BaseModel
 
 # Load environment variables
@@ -84,10 +83,3 @@ async def query_rag(request: QueryRequest):
     context = search_index(prompt)
     response = query_gemini_api(prompt, context, API_KEY)
     return {"response": response}
-
-def main():
-    """Main function to start the FastAPI server."""
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
-
-if __name__ == "__main__":
-    main()
