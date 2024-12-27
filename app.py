@@ -1,4 +1,5 @@
 import faiss
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 import pickle
 from sentence_transformers import SentenceTransformer
@@ -15,6 +16,18 @@ class QueryRequest(BaseModel):
     prompt: str
 
 app = FastAPI()
+
+origins = [
+    "*",  # Localhost during development
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # List of allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods like GET, POST, PUT, DELETE
+    allow_headers=["*"],  # Allows all headers
+)
 
 # File paths
 FAISS_INDEX_PATH = "./embeddings/index.faiss"
