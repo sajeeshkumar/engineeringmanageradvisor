@@ -90,6 +90,10 @@ def query_gemini_api(prompt, context, api_key):
     else:
         return f"Error: {response.status_code} - {response.text}"
 
+@app.options("/query")
+async def options():
+    return {}
+
 @app.post("/query")
 async def query_rag(request: QueryRequest):
     """Handle user queries."""
