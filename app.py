@@ -18,7 +18,8 @@ class QueryRequest(BaseModel):
 app = FastAPI()
 
 origins = [
-    "*",  # Localhost during development
+    "https://jarvis-io9g.onrender.com",
+    "http://localhost",
 ]
 
 app.add_middleware(
