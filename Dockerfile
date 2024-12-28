@@ -1,5 +1,5 @@
 # Use the official Python image as a base image
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 EXPOSE 8000
 
 # Set the environment variable for FastAPI to listen on all network interfaces
-ENV UVICORN_CMD="uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+ENV UVICORN_CMD="uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
 
 # Command to run the application using Uvicorn
 CMD ["sh", "-c", "$UVICORN_CMD"]
