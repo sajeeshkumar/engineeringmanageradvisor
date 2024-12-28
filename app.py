@@ -19,7 +19,7 @@ app = FastAPI()
 
 origins = [
     "https://jarvis-io9g.onrender.com",
-    "http://localhost",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
