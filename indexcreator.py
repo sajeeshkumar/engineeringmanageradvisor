@@ -6,19 +6,12 @@ from sentence_transformers import SentenceTransformer
 import PyPDF2
 
 def extract_text_from_pdf(pdf_path):
-    """Extract text from a PDF file, handling errors."""
-    try:
-        pdf_reader = PyPDF2.PdfReader(pdf_path)
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text()
-        return text
-    except PyPDF2.errors.PdfReadError as e:
-        print(f"Error reading {pdf_path}: {e}")
-        return ""  # Return an empty string for problematic files
-    except Exception as e:
-        print(f"Unexpected error reading {pdf_path}: {e}")
-        return ""  # Handle other unexpected errors
+    """Extract text from a PDF file."""
+    pdf_reader = PyPDF2.PdfReader(pdf_path)
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+    return text
 
 def split_text_into_chunks(text, chunk_size=500):
     """Split text into smaller chunks for embedding."""
@@ -26,27 +19,31 @@ def split_text_into_chunks(text, chunk_size=500):
     return chunks
 
 def create_faiss_index_from_pdfs(pdf_paths, index_path, chunk_size=500):
-    """Create a FAISS index from multiple PDF files."""
+    """Create a FAISS index from multiple PDF files with metadata (file names)."""
     all_chunks = []
+    metadata = []  # Store metadata (file name and chunk indices)
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
     for pdf_path in pdf_paths:
         text = extract_text_from_pdf(pdf_path)
         chunks = split_text_into_chunks(text, chunk_size)
-        for chunk_index, chunk in enumerate(chunks):
-            all_chunks.append({"file_name": os.path.basename(pdf_path), "text": chunk})
+        all_chunks.extend(chunks)
+        # Add file name and chunk index for each chunk
+        metadata.extend([(os.path.basename(pdf_path), i) for i in range(len(chunks))])
 
     # Generate embeddings for all chunks
-    embeddings = embedding_model.encode([chunk["text"] for chunk in all_chunks])
-
+    embeddings = embedding_model.encode(all_chunks)
+    
     # Create FAISS index
     index = faiss.IndexFlatL2(embeddings.shape[1])  # L2 distance
     index.add(np.array(embeddings))
 
-    # Save the FAISS index and chunks to disk
+    # Save the FAISS index, chunks, and metadata to disk
     faiss.write_index(index, index_path)
-    with open("chunks.pkl", "wb") as f:
+    with open('chunks.pkl', 'wb') as f:
         pickle.dump(all_chunks, f)
+    with open('metadata.pkl', 'wb') as f:
+        pickle.dump(metadata, f)
 
     print("Preprocessing completed and data saved.")
 
