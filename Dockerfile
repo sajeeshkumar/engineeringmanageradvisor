@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire application code into the container
 COPY embeddings embeddings
 COPY chunks.pkl .
+COPY metadata.pkl .
 COPY app.py .
 
 # Expose the port that FastAPI will run on
