@@ -20,20 +20,19 @@ def split_text_into_chunks(text, chunk_size=500):
 
 def create_faiss_index_from_pdfs(pdf_paths, index_path, chunk_size=500):
     """Create a FAISS index from multiple PDF files with metadata (file names)."""
-    all_chunks = []
-    metadata = []  # Store metadata (file name and chunk indices)
+    all_chunks = []  # List of dictionaries containing chunk text and metadata
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
     for pdf_path in pdf_paths:
         text = extract_text_from_pdf(pdf_path)
         chunks = split_text_into_chunks(text, chunk_size)
-        all_chunks.extend(chunks)
-        # Add file name and chunk index for each chunk
-        metadata.extend([(os.path.basename(pdf_path), i) for i in range(len(chunks))])
+        file_name = os.path.basename(pdf_path)
+        # Combine chunk text with metadata
+        all_chunks.extend([{"file_name": file_name, "text": chunk} for chunk in chunks])
 
     # Generate embeddings for all chunks
-    embeddings = embedding_model.encode(all_chunks)
-    
+    embeddings = embedding_model.encode([chunk["text"] for chunk in all_chunks])
+
     # Create FAISS index
     index = faiss.IndexFlatL2(embeddings.shape[1])  # L2 distance
     index.add(np.array(embeddings))
@@ -42,8 +41,6 @@ def create_faiss_index_from_pdfs(pdf_paths, index_path, chunk_size=500):
     faiss.write_index(index, index_path)
     with open('chunks.pkl', 'wb') as f:
         pickle.dump(all_chunks, f)
-    with open('metadata.pkl', 'wb') as f:
-        pickle.dump(metadata, f)
 
     print("Preprocessing completed and data saved.")
 
