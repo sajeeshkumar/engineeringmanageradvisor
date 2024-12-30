@@ -35,6 +35,7 @@ FAISS_INDEX_PATH = "./embeddings/index.faiss"
 CHUNKS_FILE_PATH = "chunks.pkl"  # Path to the saved chunks
 METADATA_FILE_PATH = "metadata.pkl"  # Path to the metadata file
 API_KEY = os.getenv("GEMINI_API_KEY")
+SOLUTION_ARCHITECTURE_AGENT_API = os.getenv("SOLUTION_ARCHITECTURE_AGENT_API")
 
 if not API_KEY:
     raise ValueError("GEMINI_API_KEY is not set. Please configure it in the .env file.")
@@ -149,7 +150,7 @@ async def query_rag(request: QueryRequest):
 @app.post("/passthrough")
 async def passthrough_api(request: QueryRequest):
     """Passthrough API to forward the request to the external endpoint."""
-    EXTERNAL_API_URL = "https://solutionarchitectagentimages-latest.onrender.com/query"
+    EXTERNAL_API_URL = SOLUTION_ARCHITECTURE_AGENT_API
     try:
         # Forward the request to the external API
         external_response = requests.post(
@@ -160,7 +161,7 @@ async def passthrough_api(request: QueryRequest):
 
         # Check if the external API call was successful
         if external_response.status_code == 200:
-            return {"response": external_response.json()}
+            return external_response.json()
         else:
             return {
                 "error": f"External API returned {external_response.status_code}: {external_response.text}"
