@@ -145,3 +145,25 @@ async def query_rag(request: QueryRequest):
         "response": response,
         "search_results": search_results,
     }
+
+@app.post("/passthrough")
+async def passthrough_api(request: QueryRequest):
+    """Passthrough API to forward the request to the external endpoint."""
+    EXTERNAL_API_URL = "https://solutionarchitectagentimages-latest.onrender.com/query"
+    try:
+        # Forward the request to the external API
+        external_response = requests.post(
+            EXTERNAL_API_URL,
+            json=request.dict(),
+            headers={"Content-Type": "application/json"},
+        )
+
+        # Check if the external API call was successful
+        if external_response.status_code == 200:
+            return {"response": external_response.json()}
+        else:
+            return {
+                "error": f"External API returned {external_response.status_code}: {external_response.text}"
+            }
+    except Exception as e:
+        return {"error": f"An error occurred while forwarding the request: {str(e)}"}
